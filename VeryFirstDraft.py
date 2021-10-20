@@ -26,15 +26,42 @@ class player:
 
     def introduce (self):
         print(self.name)
+    
+    def turn (self, board):
+        print("start of turn")
+        while self.doubleRolls < 3:
+            currentRoll = roll()
+            print("roll:",currentRoll)
+            print(board.players)
+            #also removing current player
+            #board.squares[self.position].occupants.remove(self)
+            print(board.players)
+            self.position += sum(currentRoll)
+            if self.position > 39:
+                self.position -= 40
+                self.money += 200
+            board.squares[self.position].occupants.append(self)
+            print("new position:",self.position)
+            if currentRoll[0] == currentRoll[1]:
+                self.doubleRolls += 1
+            else:
+                self.doubleRolls = 0
+                break
+        else:
+            print("sent to jail for three doubles")
+        print("end of turn")
+        
 
 #board object
 class board:
-    def __init__ (self):
-        self.players = []
+    def __init__ (self, players):
+        self.players = players
         self.squares = squaresArray()
-    
-    def addPlayer (self, newPlayer):
-        self.players.append(newPlayer)
+        self.squares[0].occupants = players
+        
+    def turn (self):
+        for p in self.players:
+            p.turn(self)
     
     def listPlayers (self):
         for people in self.players:
@@ -92,7 +119,7 @@ class utility (square):
         
 
 def roll ():
-    return random.randint(1,6) + random.randint(1,6)
+    return [random.randint(1,6), random.randint(1,6)]
 
 #method that generates the list of property objects from a CSV file
 def squaresArray ():
@@ -119,19 +146,30 @@ def squaresArray ():
             index += 1
         else:
             1+1 #skips header row
-            print(csv_row)
+            #print(csv_row)
     squares_file.close()
     return rows
 
 myArr = squaresArray()
+"""
 for row in myArr:
     print(row.index, "-->", row.name, "type", type(row))
+"""
+
+steve = player("steve", None)
+myBoard = board([steve])
+myBoard.turn()
+myBoard.turn()
+myBoard.turn()
+myBoard.turn()
+myBoard.turn()
+
 
 """
 #tests that roll empirical distribution mathces expectation
 trials = []
 for i in range(0,36000):
-    trials.append(roll())
+    trials.append(sum(roll()))
 
 print(trials)
 plt.hist(trials, bins = range(1,14))
